@@ -1,0 +1,28 @@
+# Build stage
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+# Download dependencies first (Docker layer cache)
+RUN mvn dependency:go-offline -q
+COPY src ./src
+RUN mvn package -DskipTests -q
+
+# Runtime stage
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && mkdir -p /var/app/uploads \
+    && chown -R appuser:appgroup /var/app/uploads
+USER appuser
+
+COPY --from=build /app/target/expense-tracker-api-*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-Dspring.profiles.active=prod", \
+  "-jar", "app.jar"]

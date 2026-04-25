@@ -1,0 +1,146 @@
+<div class="upload-page">
+  <div class="page-header">
+    <h1>Upload Bank Statement</h1>
+    <p class="subtitle">Supported formats: PDF, CSV (max 20MB)</p>
+  </div>
+
+  <div class="upload-container">
+    <!-- Drop Zone -->
+    <div class="drop-zone"
+         [class.dragover]="isDragOver"
+         [class.has-file]="selectedFile"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave()"
+         (drop)="onDrop($event)"
+         *ngIf="!uploadJob">
+
+      <div class="drop-content" *ngIf="!selectedFile">
+        <div class="upload-icon">📄</div>
+        <h3>Drag & drop your file here</h3>
+        <p>or</p>
+        <label class="btn btn-outline">
+          Browse Files
+          <input type="file" accept=".pdf,.csv" (change)="onFileSelected($event)" hidden>
+        </label>
+      </div>
+
+      <div class="file-info" *ngIf="selectedFile">
+        <div class="file-icon">{{ selectedFile.name.endsWith('.pdf') ? '📕' : '📊' }}</div>
+        <div class="file-details">
+          <div class="file-name">{{ selectedFile.name }}</div>
+          <div class="file-size">{{ formatSize(selectedFile.size) }}</div>
+        </div>
+        <button class="remove-btn" (click)="resetUpload()" title="Remove">✕</button>
+      </div>
+
+      <!-- PDF Password Field — shown only when a PDF is selected -->
+      <div class="pdf-password-field" *ngIf="selectedFile && isPdf">
+        <label class="password-label">
+          PDF Password <span class="optional">(if password-protected)</span>
+        </label>
+        <div class="password-input-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="pdfPassword"
+            placeholder="Enter PDF password"
+            class="password-input"
+            autocomplete="off">
+          <button type="button" class="toggle-visibility" (click)="showPassword = !showPassword"
+                  [title]="showPassword ? 'Hide password' : 'Show password'">
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <p class="password-hint">
+          Used only to decrypt this file — never stored anywhere.
+        </p>
+      </div>
+
+      <div class="alert alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+      <div class="upload-actions" *ngIf="selectedFile && !uploading">
+        <button class="btn btn-primary btn-large" (click)="upload()">
+          🚀 Process Statement
+        </button>
+      </div>
+
+      <div class="uploading-state" *ngIf="uploading">
+        <div class="spinner-small"></div>
+        <span>Uploading...</span>
+      </div>
+    </div>
+
+    <!-- Processing Status -->
+    <div class="status-card" *ngIf="uploadJob">
+      <div class="status-icon">
+        <span *ngIf="uploadJob.status === 'PENDING'">⏳</span>
+        <span *ngIf="uploadJob.status === 'PROCESSING'">⚙️</span>
+        <span *ngIf="uploadJob.status === 'COMPLETED'">✅</span>
+        <span *ngIf="uploadJob.status === 'FAILED'">❌</span>
+      </div>
+
+      <div class="status-content">
+        <div class="status-title">{{ uploadJob.fileName }}</div>
+        <div class="status-subtitle">
+          <span *ngIf="uploadJob.status === 'PENDING'">Waiting to process...</span>
+          <span *ngIf="uploadJob.status === 'PROCESSING'">
+            Extracting and categorizing transactions with AI...
+            <span *ngIf="uploadJob.totalRows">({{ uploadJob.processedRows }}/{{ uploadJob.totalRows }})</span>
+          </span>
+          <span *ngIf="uploadJob.status === 'COMPLETED'">
+            Processed {{ uploadJob.totalRows }} transactions. Redirecting to transactions...
+          </span>
+          <span *ngIf="uploadJob.status === 'FAILED'" class="error-text">
+            Failed: {{ uploadJob.errorMessage }}
+          </span>
+        </div>
+
+        <div class="progress-bar" *ngIf="uploadJob.status === 'PROCESSING' && uploadJob.totalRows">
+          <div class="progress-fill" [style.width.%]="progressPercent"></div>
+        </div>
+
+        <div class="status-badge" [class]="'badge-' + uploadJob.status.toLowerCase()">
+          {{ uploadJob.status }}
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" (click)="resetUpload()" *ngIf="uploadJob.status === 'FAILED' || uploadJob.status === 'COMPLETED'">
+        Upload Another
+      </button>
+    </div>
+
+    <!-- How it works -->
+    <div class="how-it-works">
+      <h3>How it works</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>Upload</strong>
+            <p>Upload your PDF or CSV bank statement</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>Extract</strong>
+            <p>Transactions are automatically extracted</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>Categorize</strong>
+            <p>AI categorizes each transaction intelligently</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <strong>Analyze</strong>
+            <p>View insights on your dashboard</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

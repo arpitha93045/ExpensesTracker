@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+
+app:
+  jwt:
+    secret: test-secret-that-is-long-enough-for-hmac-sha256-algorithm-needs-256bits
+    access-token-expiry-minutes: 15
+    refresh-token-expiry-days: 7
+  storage:
+    base-path: ./test-uploads
+  anthropic:
+    api-key: ""
+  cors:
+    allowed-origins: http://localhost:4200
+  notifications:
+    enabled: false
