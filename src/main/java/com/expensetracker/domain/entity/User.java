@@ -34,6 +34,14 @@ public class User {
     @Builder.Default
     private String role = "ROLE_USER";
 
+    @Column(name = "default_currency", length = 3, nullable = false)
+    @Builder.Default
+    private String defaultCurrency = "INR";
+
+    @Column(name = "notifications_enabled", nullable = false)
+    @Builder.Default
+    private boolean notificationsEnabled = true;
+
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private boolean active = true;

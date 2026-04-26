@@ -4,6 +4,17 @@ export interface User {
   email: string;
   fullName: string;
   role: string;
+  defaultCurrency?: string;
+  notificationsEnabled?: boolean;
+}
+
+export interface UserProfile {
+  userId: string;
+  email: string;
+  fullName: string;
+  defaultCurrency: string;
+  notificationsEnabled: boolean;
+  createdAt: string;
 }
 
 export interface Transaction {
@@ -183,102 +194,4 @@ export interface AutopsyReport {
   narrative: string;
   highlights: AutopsyHighlight[];
   weeklyBreakdown: AutopsyWeeklyBreakdown[];
-}
-
-
-export interface Transaction {
-  id: string;
-  description: string;
-  amount: number;
-  currency: string;
-  transactionDate: string;
-  transactionType: 'DEBIT' | 'CREDIT';
-  merchant?: string;
-  category?: Category;
-  aiCategorized: boolean;
-  aiConfidence?: number;
-  categorizationNote?: string;
-  createdAt: string;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  icon: string;
-  color: string;
-}
-
-export interface UploadJob {
-  id: string;
-  fileName: string;
-  fileType: string;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-  totalRows?: number;
-  processedRows: number;
-  errorMessage?: string;
-  createdAt: string;
-  completedAt?: string;
-}
-
-export interface PagedResponse<T> {
-  content: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  last: boolean;
-}
-
-export interface CategoryBreakdown {
-  category: string;
-  icon?: string;
-  color?: string;
-  total: number;
-  count: number;
-  percentage: number;
-  momChange?: number;
-}
-
-export interface MomComparison {
-  currentExpenses: number;
-  previousExpenses: number;
-  expensesChangePercent: number;
-  currentIncome: number;
-  previousIncome: number;
-  incomeChangePercent: number;
-}
-
-export interface AnalyticsSummary {
-  totalExpenses: number;
-  totalIncome: number;
-  netSavings: number;
-  transactionCount: number;
-  categoryBreakdown: CategoryBreakdown[];
-  monthlyTrend: MonthlyTrend[];
-  topMerchants: TopMerchant[];
-  insights: string[];
-  momComparison?: MomComparison;
-}
-
-export interface MonthlyTrend {
-  month: string;
-  expenses: number;
-  income: number;
-}
-
-export interface TopMerchant {
-  merchant: string;
-  count: number;
-  total: number;
-}
-
-export interface Budget {
-  id?: number;
-  categoryId: number;
-  categoryName: string;
-  categoryColor: string;
-  budgetAmount: number;
-  spentAmount: number;
-  percentUsed: number;
-  yearMonth: string;
 }

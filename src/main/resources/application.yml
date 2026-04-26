@@ -62,6 +62,7 @@ app:
   notifications:
     enabled: ${NOTIFICATIONS_ENABLED:false}
     from-email: ${MAIL_FROM:noreply@expensetracker.com}
+  base-url: ${APP_BASE_URL:http://localhost}
 
 springdoc:
   api-docs:
