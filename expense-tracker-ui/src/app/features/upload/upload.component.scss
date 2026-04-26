@@ -27,7 +27,7 @@
 }
 
 .drop-zone {
-  background: white;
+  background: var(--surface);
   border: 2.5px dashed var(--border);
   border-radius: 16px;
   padding: 48px;
@@ -127,7 +127,7 @@
   .password-input-wrapper {
     display: flex;
     align-items: center;
-    background: white;
+    background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
@@ -232,7 +232,7 @@
 .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
 .status-card {
-  background: white;
+  background: var(--surface);
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
@@ -292,7 +292,7 @@
 }
 
 .how-it-works {
-  background: white;
+  background: var(--surface);
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);

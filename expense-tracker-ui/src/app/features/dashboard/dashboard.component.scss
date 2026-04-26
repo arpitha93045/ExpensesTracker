@@ -71,7 +71,7 @@
 }
 
 .kpi-card {
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
   padding: 20px 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -176,7 +176,7 @@
 }
 
 .chart-card {
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -230,7 +230,7 @@
 }
 
 .table-card {
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -295,7 +295,7 @@
 
 // ── MoM Comparison ──────────────────────────────────────────
 .mom-card {
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);

@@ -36,7 +36,7 @@
   align-items: flex-end;
   gap: 12px;
   margin-bottom: 20px;
-  background: white;
+  background: var(--surface);
   padding: 16px 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -121,7 +121,7 @@
 }
 
 .table-card {
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   overflow: hidden;
@@ -237,7 +237,7 @@
 .page-btn {
   padding: 8px 14px;
   border: 1.5px solid var(--border);
-  background: white;
+  background: var(--surface);
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.875rem;

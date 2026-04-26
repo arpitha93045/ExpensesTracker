@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { AsyncPipe, NgIf } from '@angular/common';
 
 @Component({
@@ -22,6 +23,9 @@ import { AsyncPipe, NgIf } from '@angular/common';
         <li><a routerLink="/upload" routerLinkActive="active">Upload</a></li>
       </ul>
       <div class="navbar-user" *ngIf="(authService.currentUser$ | async) as user">
+        <button class="btn-theme" (click)="themeService.toggle()" [title]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
+          {{ themeService.isDark() ? '☀️' : '🌙' }}
+        </button>
         <span class="user-name">{{ $any(user).fullName }}</span>
         <button class="btn-logout" (click)="authService.logout()">Logout</button>
       </div>
@@ -94,8 +98,22 @@ import { AsyncPipe, NgIf } from '@angular/common';
       color: var(--danger);
       border-color: var(--danger);
     }
+    .btn-theme {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+    .btn-theme:hover {
+      background: var(--primary-light);
+    }
   `]
 })
 export class NavComponent {
   authService = inject(AuthService);
+  themeService = inject(ThemeService);
 }
