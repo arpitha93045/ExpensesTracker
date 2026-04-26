@@ -39,6 +39,26 @@ export class TransactionService {
     return `${this.API}/export/csv?${params.toString()}`;
   }
 
+  exportExcelUrl(from?: string, to?: string, search?: string, categoryId?: number, type?: string): string {
+    let params = new HttpParams();
+    if (from)       params = params.set('from', from);
+    if (to)         params = params.set('to', to);
+    if (search)     params = params.set('search', search);
+    if (categoryId) params = params.set('categoryId', categoryId.toString());
+    if (type)       params = params.set('type', type);
+    return `${this.API}/export/excel?${params.toString()}`;
+  }
+
+  exportPdfUrl(from?: string, to?: string, search?: string, categoryId?: number, type?: string): string {
+    let params = new HttpParams();
+    if (from)       params = params.set('from', from);
+    if (to)         params = params.set('to', to);
+    if (search)     params = params.set('search', search);
+    if (categoryId) params = params.set('categoryId', categoryId.toString());
+    if (type)       params = params.set('type', type);
+    return `${this.API}/export/pdf?${params.toString()}`;
+  }
+
   updateCategory(transactionId: string, categoryId: number, note?: string): Observable<Transaction> {
     return this.http.patch<Transaction>(
       `${this.API}/${transactionId}/category`,

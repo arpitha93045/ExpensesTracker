@@ -1,0 +1,106 @@
+<div class="categories-page">
+  <div class="page-header">
+    <div>
+      <h1>Categories</h1>
+      <p class="subtitle">Manage your custom expense categories</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">+ New Category</button>
+  </div>
+
+  <div class="error-msg" *ngIf="error">{{ error }}</div>
+
+  <!-- Create / Edit Form -->
+  <div class="form-card" *ngIf="showForm">
+    <h3>{{ editingId ? 'Edit Category' : 'New Category' }}</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="form.name" placeholder="e.g. Gym & Fitness" class="form-input" maxlength="100" />
+      </div>
+      <div class="form-group form-group-sm">
+        <label>Icon</label>
+        <input type="text" [(ngModel)]="form.icon" class="form-input icon-input" maxlength="4" />
+      </div>
+      <div class="form-group form-group-sm">
+        <label>Color</label>
+        <input type="color" [(ngModel)]="form.color" class="color-picker" />
+      </div>
+    </div>
+
+    <div class="preset-section">
+      <label>Quick icons</label>
+      <div class="preset-icons">
+        <button *ngFor="let ic of presetIcons" class="preset-icon"
+                [class.selected]="form.icon === ic"
+                (click)="form.icon = ic">{{ ic }}</button>
+      </div>
+    </div>
+
+    <div class="preset-section">
+      <label>Quick colors</label>
+      <div class="preset-colors">
+        <button *ngFor="let col of presetColors" class="preset-color"
+                [class.selected]="form.color === col"
+                [style.background]="col"
+                (click)="form.color = col"></button>
+      </div>
+    </div>
+
+    <div class="preview-row">
+      <span class="preview-label">Preview:</span>
+      <span class="category-badge" [style.background]="form.color + '22'" [style.color]="form.color">
+        {{ form.icon }} {{ form.name || 'Category Name' }}
+      </span>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving || !form.name.trim()">
+        {{ saving ? 'Saving…' : (editingId ? 'Update' : 'Create') }}
+      </button>
+      <button class="btn btn-ghost" (click)="cancelForm()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="spinner-wrap" *ngIf="loading">
+    <span>Loading…</span>
+  </div>
+
+  <!-- Custom Categories -->
+  <div class="section" *ngIf="!loading">
+    <h2 class="section-title">Your Categories <span class="count">{{ customCategories.length }}</span></h2>
+    <div class="empty-custom" *ngIf="customCategories.length === 0">
+      <p>No custom categories yet. Click <strong>+ New Category</strong> to create one.</p>
+    </div>
+    <div class="cat-grid" *ngIf="customCategories.length > 0">
+      <div class="cat-card custom" *ngFor="let cat of customCategories">
+        <div class="cat-icon" [style.background]="cat.color + '22'" [style.color]="cat.color">
+          {{ cat.icon || '🏷️' }}
+        </div>
+        <div class="cat-info">
+          <span class="cat-name">{{ cat.name }}</span>
+          <span class="cat-tag">Custom</span>
+        </div>
+        <div class="cat-actions">
+          <button class="icon-btn edit" (click)="openEdit(cat)" title="Edit">✏️</button>
+          <button class="icon-btn delete" (click)="delete(cat)" title="Delete">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Categories -->
+  <div class="section" *ngIf="!loading">
+    <h2 class="section-title">System Categories <span class="count">{{ globalCategories.length }}</span></h2>
+    <div class="cat-grid">
+      <div class="cat-card global" *ngFor="let cat of globalCategories">
+        <div class="cat-icon" [style.background]="cat.color + '22'" [style.color]="cat.color">
+          {{ cat.icon || '🏷️' }}
+        </div>
+        <div class="cat-info">
+          <span class="cat-name">{{ cat.name }}</span>
+          <span class="cat-tag system">System</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

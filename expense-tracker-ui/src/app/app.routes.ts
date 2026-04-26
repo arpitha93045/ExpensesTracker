@@ -53,5 +53,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/autopsy/autopsy.component').then(m => m.AutopsyComponent)
   },
+  {
+    path: 'categories',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/categories/categories.component').then(m => m.CategoriesComponent)
+  },
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(m => m.ProfileComponent)
+  },
   { path: '**', redirectTo: 'dashboard' }
 ];

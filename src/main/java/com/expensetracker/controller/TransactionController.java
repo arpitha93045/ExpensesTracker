@@ -72,6 +72,44 @@ public class TransactionController {
         transactionService.exportCsv(userId, from, to, searchTrim, categoryId, type, response.getWriter());
     }
 
+    @GetMapping("/export/excel")
+    @Operation(summary = "Export transactions as Excel (.xlsx)")
+    public void exportExcel(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) TransactionType type,
+            HttpServletResponse response) throws IOException {
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"transactions.xlsx\"");
+
+        UUID userId = resolveUserId(userDetails);
+        String searchTrim = (search != null && search.isBlank()) ? null : search;
+        transactionService.exportExcel(userId, from, to, searchTrim, categoryId, type, response.getOutputStream());
+    }
+
+    @GetMapping("/export/pdf")
+    @Operation(summary = "Export transactions as PDF")
+    public void exportPdf(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) TransactionType type,
+            HttpServletResponse response) throws IOException {
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"transactions.pdf\"");
+
+        UUID userId = resolveUserId(userDetails);
+        String searchTrim = (search != null && search.isBlank()) ? null : search;
+        transactionService.exportPdf(userId, from, to, searchTrim, categoryId, type, response.getOutputStream());
+    }
+
     @PatchMapping("/{id}/category")
     @Operation(summary = "Update the category of a transaction")
     public TransactionResponse updateCategory(

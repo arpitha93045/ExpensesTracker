@@ -35,6 +35,7 @@ public class FileUploadService {
     private final UploadJobRepository uploadJobRepository;
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /**
      * Saves the file to disk and creates an UploadJob synchronously.
@@ -92,11 +93,27 @@ public class FileUploadService {
             uploadJobRepository.save(job);
             log.info("Job {} completed successfully with {} transactions", jobId, transactions.size());
 
+            User user = userRepository.findById(userId).orElse(null);
+            if (user != null) {
+                notificationService.sendUploadComplete(
+                        user.getEmail(), user.getFullName(),
+                        job.getFileName(), newTransactions.size(), true, null,
+                        user.isNotificationsEnabled());
+            }
+
         } catch (Exception ex) {
             log.error("Job {} failed: {}", jobId, ex.getMessage(), ex);
             job.setStatus(UploadStatus.FAILED);
             job.setErrorMessage(ex.getMessage());
             uploadJobRepository.save(job);
+
+            User user = userRepository.findById(userId).orElse(null);
+            if (user != null) {
+                notificationService.sendUploadComplete(
+                        user.getEmail(), user.getFullName(),
+                        job.getFileName(), 0, false, ex.getMessage(),
+                        user.isNotificationsEnabled());
+            }
         }
     }
 

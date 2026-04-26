@@ -6,6 +6,19 @@ import { CategoryService } from '../../../core/services/category.service';
 import { Transaction, Category, PagedResponse } from '../../../core/models/models';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
+interface FilterPreset {
+  name: string;
+  fromDate: string;
+  toDate: string;
+  searchText: string;
+  categoryId: number | null;
+  type: 'DEBIT' | 'CREDIT' | '';
+}
+
+const PRESETS_KEY = 'tx_filter_presets';
+const HISTORY_KEY = 'tx_search_history';
+const HISTORY_MAX = 8;
+
 @Component({
   selector: 'app-transaction-list',
   standalone: true,
@@ -36,9 +49,18 @@ export class TransactionListComponent implements OnInit {
   editingId: string | null = null;
   editCategoryId: number | null = null;
 
+  // Presets
+  presets: FilterPreset[] = [];
+
+  // Search history
+  searchHistory: string[] = [];
+  showHistory = false;
+
   ngOnInit(): void {
     this.loadCategories();
     this.loadTransactions();
+    this.presets = this.readPresets();
+    this.searchHistory = this.readHistory();
   }
 
   loadTransactions(): void {
@@ -67,6 +89,8 @@ export class TransactionListComponent implements OnInit {
 
   applyFilter(): void {
     this.currentPage = 0;
+    if (this.searchText.trim()) this.pushHistory(this.searchText.trim());
+    this.showHistory = false;
     this.loadTransactions();
   }
 
@@ -79,16 +103,120 @@ export class TransactionListComponent implements OnInit {
     this.applyFilter();
   }
 
-  exportCsv(): void {
-    const url = this.transactionService.exportCsvUrl(
-      this.fromDate || undefined,
-      this.toDate || undefined,
-      this.searchText || undefined,
-      this.selectedCategoryId ?? undefined,
-      this.selectedType || undefined
-    );
-    window.open(url, '_blank');
+  // ── Presets ──────────────────────────────────────────────────
+
+  get hasActiveFilter(): boolean {
+    return !!(this.fromDate || this.toDate || this.searchText || this.selectedCategoryId || this.selectedType);
   }
+
+  savePreset(): void {
+    const name = prompt('Name this filter preset:')?.trim();
+    if (!name) return;
+    const preset: FilterPreset = {
+      name,
+      fromDate: this.fromDate,
+      toDate: this.toDate,
+      searchText: this.searchText,
+      categoryId: this.selectedCategoryId,
+      type: this.selectedType
+    };
+    this.presets = [...this.presets.filter(p => p.name !== name), preset];
+    this.writePresets();
+  }
+
+  applyPreset(preset: FilterPreset): void {
+    this.fromDate = preset.fromDate;
+    this.toDate = preset.toDate;
+    this.searchText = preset.searchText;
+    this.selectedCategoryId = preset.categoryId;
+    this.selectedType = preset.type;
+    this.applyFilter();
+  }
+
+  deletePreset(preset: FilterPreset, event: Event): void {
+    event.stopPropagation();
+    this.presets = this.presets.filter(p => p.name !== preset.name);
+    this.writePresets();
+  }
+
+  private readPresets(): FilterPreset[] {
+    try {
+      return JSON.parse(localStorage.getItem(PRESETS_KEY) ?? '[]');
+    } catch { return []; }
+  }
+
+  private writePresets(): void {
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(this.presets));
+  }
+
+  // ── Search History ────────────────────────────────────────────
+
+  get filteredHistory(): string[] {
+    const q = this.searchText.trim().toLowerCase();
+    return q
+      ? this.searchHistory.filter(h => h.toLowerCase().includes(q) && h !== this.searchText.trim())
+      : this.searchHistory;
+  }
+
+  pickHistory(term: string): void {
+    this.searchText = term;
+    this.showHistory = false;
+    this.applyFilter();
+  }
+
+  hideHistoryDelayed(): void {
+    setTimeout(() => (this.showHistory = false), 150);
+  }
+
+  removeHistory(term: string, event: Event): void {
+    event.stopPropagation();
+    this.searchHistory = this.searchHistory.filter(h => h !== term);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(this.searchHistory));
+  }
+
+  clearHistory(): void {
+    this.searchHistory = [];
+    localStorage.removeItem(HISTORY_KEY);
+  }
+
+  private pushHistory(term: string): void {
+    this.searchHistory = [term, ...this.searchHistory.filter(h => h !== term)].slice(0, HISTORY_MAX);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(this.searchHistory));
+  }
+
+  private readHistory(): string[] {
+    try {
+      return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]');
+    } catch { return []; }
+  }
+
+  // ── Export ───────────────────────────────────────────────────
+
+  exportCsv(): void {
+    window.open(this.transactionService.exportCsvUrl(
+      this.fromDate || undefined, this.toDate || undefined,
+      this.searchText || undefined, this.selectedCategoryId ?? undefined,
+      this.selectedType || undefined
+    ), '_blank');
+  }
+
+  exportExcel(): void {
+    window.open(this.transactionService.exportExcelUrl(
+      this.fromDate || undefined, this.toDate || undefined,
+      this.searchText || undefined, this.selectedCategoryId ?? undefined,
+      this.selectedType || undefined
+    ), '_blank');
+  }
+
+  exportPdf(): void {
+    window.open(this.transactionService.exportPdfUrl(
+      this.fromDate || undefined, this.toDate || undefined,
+      this.searchText || undefined, this.selectedCategoryId ?? undefined,
+      this.selectedType || undefined
+    ), '_blank');
+  }
+
+  // ── Inline edit ──────────────────────────────────────────────
 
   startEdit(tx: Transaction): void {
     this.editingId = tx.id;

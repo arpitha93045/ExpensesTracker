@@ -4,8 +4,32 @@
       <h1>Transactions</h1>
       <p class="subtitle">{{ totalElements }} total transactions</p>
     </div>
-    <button class="btn btn-outline" (click)="exportCsv()" title="Export visible results as CSV">
-      ⬇ Export CSV
+    <div class="export-buttons">
+      <button class="btn btn-outline" (click)="exportCsv()" title="Export as CSV">
+        ⬇ CSV
+      </button>
+      <button class="btn btn-outline btn-excel" (click)="exportExcel()" title="Export as Excel">
+        ⬇ Excel
+      </button>
+      <button class="btn btn-outline btn-pdf" (click)="exportPdf()" title="Export as PDF">
+        ⬇ PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Saved Filter Presets -->
+  <div class="presets-bar" *ngIf="presets.length > 0 || hasActiveFilter">
+    <div class="presets-left">
+      <span class="presets-label">Presets</span>
+      <div class="preset-chips">
+        <button *ngFor="let p of presets" class="preset-chip" (click)="applyPreset(p)" title="Apply preset">
+          {{ p.name }}
+          <span class="chip-delete" (click)="deletePreset(p, $event)" title="Delete preset">×</span>
+        </button>
+      </div>
+    </div>
+    <button class="btn-save-preset" (click)="savePreset()" *ngIf="hasActiveFilter" title="Save current filters as a preset">
+      + Save filter
     </button>
   </div>
 
@@ -14,7 +38,20 @@
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
       <input type="text" [(ngModel)]="searchText" placeholder="Search description or merchant..."
-             class="search-input" (keyup.enter)="applyFilter()">
+             class="search-input" (keyup.enter)="applyFilter()"
+             (focus)="showHistory = true"
+             (blur)="hideHistoryDelayed()">
+      <div class="history-dropdown" *ngIf="showHistory && filteredHistory.length > 0">
+        <div class="history-header">
+          <span>Recent searches</span>
+          <button class="history-clear" (click)="clearHistory()">Clear all</button>
+        </div>
+        <div class="history-item" *ngFor="let h of filteredHistory" (mousedown)="pickHistory(h)">
+          <span class="history-icon">🕐</span>
+          <span class="history-text">{{ h }}</span>
+          <span class="history-remove" (mousedown)="removeHistory(h, $event)">×</span>
+        </div>
+      </div>
     </div>
     <div class="filter-group">
       <label>From</label>

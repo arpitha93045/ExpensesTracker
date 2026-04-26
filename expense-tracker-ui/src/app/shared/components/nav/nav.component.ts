@@ -20,13 +20,14 @@ import { AsyncPipe, NgIf } from '@angular/common';
         <li><a routerLink="/calendar" routerLinkActive="active">Calendar</a></li>
         <li><a routerLink="/simulator" routerLinkActive="active">Simulator</a></li>
         <li><a routerLink="/autopsy" routerLinkActive="active">Autopsy</a></li>
+        <li><a routerLink="/categories" routerLinkActive="active">Categories</a></li>
         <li><a routerLink="/upload" routerLinkActive="active">Upload</a></li>
       </ul>
       <div class="navbar-user" *ngIf="(authService.currentUser$ | async) as user">
         <button class="btn-theme" (click)="themeService.toggle()" [title]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
           {{ themeService.isDark() ? '☀️' : '🌙' }}
         </button>
-        <span class="user-name">{{ $any(user).fullName }}</span>
+        <span class="user-name"><a routerLink="/profile" class="profile-link">{{ $any(user).fullName }}</a></span>
         <button class="btn-logout" (click)="authService.logout()">Logout</button>
       </div>
     </nav>
@@ -97,6 +98,15 @@ import { AsyncPipe, NgIf } from '@angular/common';
       background: var(--danger-light);
       color: var(--danger);
       border-color: var(--danger);
+    }
+    .profile-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .profile-link:hover {
+      color: var(--primary);
+      text-decoration: underline;
     }
     .btn-theme {
       padding: 6px 10px;

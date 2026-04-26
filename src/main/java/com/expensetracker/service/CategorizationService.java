@@ -33,6 +33,7 @@ public class CategorizationService {
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
     private final ObjectMapper objectMapper;
+    private final BudgetAlertService budgetAlertService;
 
     @Value("${app.anthropic.api-key:}")
     private String anthropicApiKey;
@@ -148,6 +149,7 @@ public class CategorizationService {
         }
         transactionRepository.saveAll(uncategorized);
         log.info("Categorization complete for {} transactions", uncategorized.size());
+        budgetAlertService.checkAndAlert(userId);
     }
 
     private void categorizeBatchWithAI(List<Transaction> batch, List<Category> categories, List<String> categoryNames)
