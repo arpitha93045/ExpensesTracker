@@ -1,0 +1,122 @@
+<div class="tax-report-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Tax Report</h1>
+      <p class="subtitle">Deductible expenses grouped by category for tax filing</p>
+    </div>
+    <div class="header-actions">
+      <div class="year-picker">
+        <label>Financial Year</label>
+        <select [(ngModel)]="selectedYear" (change)="load()" class="year-select">
+          <option *ngFor="let y of availableYears" [value]="y">{{ y }}</option>
+        </select>
+      </div>
+      <div class="export-buttons" *ngIf="report && report.categories.length > 0">
+        <button class="btn btn-excel" (click)="exportExcel()" title="Export as Excel">
+          ⬇ Excel
+        </button>
+        <button class="btn btn-pdf" (click)="exportPdf()" title="Export as PDF">
+          ⬇ PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" *ngIf="error">{{ error }}</div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading tax data...</p>
+  </div>
+
+  <ng-container *ngIf="!loading && report">
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="report.categories.length === 0">
+      <div class="empty-icon">🧾</div>
+      <h3>No deductible expenses found for {{ selectedYear }}</h3>
+      <p>Transactions categorized as <strong>Healthcare</strong>, <strong>Education</strong>,
+         or <strong>Insurance</strong> will appear here.</p>
+    </div>
+
+    <!-- Summary card -->
+    <div class="summary-card" *ngIf="report.categories.length > 0">
+      <div class="summary-header">
+        <span class="summary-label">Total Deductible — {{ selectedYear }}</span>
+        <span class="summary-amount">{{ report.totalDeductible | currency:'INR':'symbol':'1.0-0' }}</span>
+      </div>
+
+      <div class="category-bars">
+        <div class="bar-row" *ngFor="let cat of report.categories">
+          <div class="bar-label">
+            <span class="cat-name">{{ cat.name }}</span>
+            <span class="cat-count">{{ cat.transactionCount }} txn</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" [style.width.%]="share(cat)" [style.background]="cat.color"></div>
+          </div>
+          <span class="bar-amount">{{ cat.total | currency:'INR':'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deductible category cards -->
+    <div class="categories-section" *ngIf="report.categories.length > 0">
+      <h2 class="section-title">Deductible Category Breakdown</h2>
+
+      <div class="category-card" *ngFor="let cat of report.categories">
+        <div class="cat-header" (click)="toggleCategory(cat.name)">
+          <div class="cat-info">
+            <div class="cat-dot" [style.background]="cat.color"></div>
+            <div>
+              <div class="cat-title">{{ cat.name }}</div>
+              <div class="cat-meta">{{ cat.transactionCount }} transactions · {{ share(cat) | number:'1.0-1' }}% of deductible</div>
+            </div>
+          </div>
+          <div class="cat-right">
+            <span class="cat-total">{{ cat.total | currency:'INR':'symbol':'1.0-0' }}</span>
+            <span class="expand-icon">{{ expandedCategory === cat.name ? '▲' : '▼' }}</span>
+          </div>
+        </div>
+
+        <div class="cat-transactions" *ngIf="expandedCategory === cat.name">
+          <table class="tx-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Merchant</th>
+                <th class="amount-col">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tx of cat.transactions">
+                <td class="date-col">{{ tx.date | date:'MMM d, y' }}</td>
+                <td class="desc-col" [title]="tx.description">{{ tx.description }}</td>
+                <td>{{ tx.merchant || '—' }}</td>
+                <td class="amount-col debit-amount">{{ tx.amount | currency:'INR':'symbol':'1.0-0' }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="subtotal-row">
+                <td colspan="3"><strong>Subtotal</strong></td>
+                <td class="amount-col"><strong>{{ cat.total | currency:'INR':'symbol':'1.0-0' }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <p class="disclaimer" *ngIf="report.categories.length > 0">
+      This report is generated for reference only. Please verify deductibility with a qualified tax advisor before filing.
+    </p>
+
+  </ng-container>
+
+</div>

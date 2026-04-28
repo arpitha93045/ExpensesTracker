@@ -93,6 +93,20 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             @Param("categoryId") Integer categoryId,
             @Param("txType") String txType);
 
+    // ── Tax report: all debits in a date range ───────────────────
+    @Query(value = """
+        SELECT t.* FROM transactions t
+        WHERE t.user_id = :userId
+          AND t.transaction_date >= CAST(:from AS date)
+          AND t.transaction_date <= CAST(:to AS date)
+          AND t.transaction_type = 'DEBIT'
+        ORDER BY t.transaction_date ASC
+        """, nativeQuery = true)
+    List<Transaction> findDebitsInRange(
+            @Param("userId") UUID userId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
+
     // ── Duplicate detection ──────────────────────────────────────
     @Query(value = """
         SELECT CONCAT(t.transaction_date, '|', t.amount, '|', t.transaction_type, '|', t.description)

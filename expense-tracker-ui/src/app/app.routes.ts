@@ -65,5 +65,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/profile/profile.component').then(m => m.ProfileComponent)
   },
+  {
+    path: 'tax-report',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/tax-report/tax-report.component').then(m => m.TaxReportComponent)
+  },
   { path: '**', redirectTo: 'dashboard' }
 ];
