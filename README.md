@@ -60,14 +60,18 @@ Open `http://localhost:4200` in your browser. The Angular dev server automatical
 ## Features
 
 - **AI Categorization** — Automatically categorizes transactions using Claude (claude-3-5-haiku)
-- **Bank Statement Import** — Upload CSV or PDF bank statements; processed asynchronously
+- **Bank Statement Import** — Upload CSV or PDF bank statements (including password-protected PDFs); processed asynchronously
 - **Dashboard & Analytics** — Spending summaries, category breakdowns, monthly trends
 - **Budget Planning** — Set monthly budgets per category and track spend
 - **Calendar View** — Daily expense heatmap
 - **Spending Autopsy** — Deep-dive analysis and anomaly detection
 - **What-If Simulator** — Model spending scenarios
 - **Inflation Analysis** — Track purchasing power over time
+- **Tax Report** — Annual income/expense summary with PDF and Excel export
+- **User Profile** — Update display name, password, and app preferences
+- **Two-Factor Authentication (TOTP)** — Authenticator-app based 2FA (Google Authenticator, Authy, etc.) with QR code setup
 - **JWT Auth** — Secure login with HttpOnly cookies and per-device token revocation
+- **Login Rate Limiting** — Brute-force protection on `/auth/login` (10 attempts per 15 minutes per IP)
 
 ---
 
@@ -322,12 +326,14 @@ ExpensesTracker/
 
 | Group | Base Path | Description |
 |-------|-----------|-------------|
-| Auth | `/api/auth` | Register, login, refresh token, logout |
+| Auth | `/api/auth` | Register, login, refresh token, logout, 2FA setup and verify |
 | Transactions | `/api/transactions` | List, filter, export, delete transactions |
 | Analytics | `/api/analytics` | Summaries, trends, bills, inflation, calendar |
 | Categories | `/api/categories` | List system and user-defined categories |
 | Budgets | `/api/budgets` | Get, set, and delete monthly budgets |
 | Uploads | `/api/uploads` | Upload CSV/PDF, poll job status |
+| Tax Report | `/api/tax-report` | Annual summary, PDF and Excel export |
+| Profile | `/api/profile` | Get/update profile, change password, update preferences |
 
 Full interactive API documentation is available at `/api/swagger-ui.html` when the backend is running.
 
@@ -343,6 +349,10 @@ Flyway runs migrations automatically on startup. Migration files live in `src/ma
 | `V2__seed_categories.sql` | 14 default expense categories |
 | `V3__budgets.sql` | Monthly budgets table |
 | `V4__transactions_dedup_constraint.sql` | Deduplication constraint |
+| `V5__update_category_icons_to_emoji.sql` | Emoji icons for categories |
+| `V6__user_preferences.sql` | User preferences column |
+| `V7__two_factor_auth.sql` | TOTP secret and 2FA challenge tables |
+| `V8__remove_email_otp.sql` | Remove legacy email OTP columns |
 
 ---
 
