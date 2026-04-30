@@ -17,6 +17,11 @@ export const routes: Routes = [
       import('./features/auth/register/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'mfa',
+    loadComponent: () =>
+      import('./features/auth/mfa-verify/mfa-verify.component').then(m => m.MfaVerifyComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () =>

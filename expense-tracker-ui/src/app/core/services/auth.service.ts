@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { User } from '../models/models';
+import { MfaChallenge, User } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,8 +14,14 @@ export class AuthService {
   private _currentUser = new BehaviorSubject<User | null>(this.loadUser());
   currentUser$ = this._currentUser.asObservable();
 
+  private _pendingChallenge: MfaChallenge | null = null;
+
   get isLoggedIn(): boolean {
     return this._currentUser.value !== null;
+  }
+
+  get pendingChallenge(): MfaChallenge | null {
+    return this._pendingChallenge;
   }
 
   register(fullName: string, email: string, password: string): Observable<User> {
@@ -24,10 +30,29 @@ export class AuthService {
       .pipe(tap(user => this.setUser(user)));
   }
 
-  login(email: string, password: string): Observable<User> {
+  login(email: string, password: string): Observable<User | MfaChallenge> {
     return this.http
-      .post<User>(`${this.API}/login`, { email, password }, { withCredentials: true })
-      .pipe(tap(user => this.setUser(user)));
+      .post<User | MfaChallenge>(`${this.API}/login`, { email, password }, { withCredentials: true })
+      .pipe(
+        tap(result => {
+          if ('mfaRequired' in result && result.mfaRequired) {
+            this._pendingChallenge = result as MfaChallenge;
+            this.router.navigate(['/mfa']);
+          } else {
+            this._pendingChallenge = null;
+            this.setUser(result as User);
+          }
+        })
+      );
+  }
+
+  verifyMfa(challengeId: string, code: string): Observable<User> {
+    return this.http
+      .post<User>(`${this.API}/mfa/verify`, { challengeId, code }, { withCredentials: true })
+      .pipe(tap(user => {
+        this._pendingChallenge = null;
+        this.setUser(user);
+      }));
   }
 
   refresh(): Observable<User> {

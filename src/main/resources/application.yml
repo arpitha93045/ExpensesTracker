@@ -14,9 +14,9 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+    open-in-view: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         jdbc:
           time_zone: UTC
@@ -59,6 +59,10 @@ app:
     batch-size: 25
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+  rate-limit:
+    login:
+      capacity: 10
+      refill-minutes: 15
   notifications:
     enabled: ${NOTIFICATIONS_ENABLED:false}
     from-email: ${MAIL_FROM:noreply@expensetracker.com}

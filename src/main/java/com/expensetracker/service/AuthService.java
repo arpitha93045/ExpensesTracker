@@ -42,6 +42,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final TwoFactorService twoFactorService;
 
     @Value("${app.jwt.refresh-token-expiry-days:7}")
     private long refreshTokenExpiryDays;
@@ -59,7 +60,7 @@ public class AuthService {
         userRepository.save(user);
         log.info("New user registered: {}", user.getEmail());
         issueTokenCookies(user, null, response);
-        return toAuthResponse(user);
+        return AuthResponse.authenticated(user.getId().toString(), user.getEmail(), user.getFullName(), user.getRole());
     }
 
     @Transactional
@@ -68,8 +69,14 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AuthException("User not found"));
+
+        if (user.isTotpEnabled()) {
+            var challenge = twoFactorService.createChallenge(user);
+            return AuthResponse.mfaChallenge(challenge.getId().toString(), "TOTP");
+        }
+
         issueTokenCookies(user, deviceInfo, response);
-        return toAuthResponse(user);
+        return AuthResponse.authenticated(user.getId().toString(), user.getEmail(), user.getFullName(), user.getRole());
     }
 
     @Transactional
@@ -91,7 +98,7 @@ public class AuthService {
 
         User user = stored.getUser();
         issueTokenCookies(user, stored.getDeviceInfo(), response);
-        return toAuthResponse(user);
+        return AuthResponse.authenticated(user.getId().toString(), user.getEmail(), user.getFullName(), user.getRole());
     }
 
     @Transactional
@@ -107,7 +114,7 @@ public class AuthService {
         clearCookies(response);
     }
 
-    private void issueTokenCookies(User user, String deviceInfo, HttpServletResponse response) {
+    public void issueTokenCookies(User user, String deviceInfo, HttpServletResponse response) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String accessToken = jwtService.generateAccessToken(userDetails);
 
@@ -156,7 +163,4 @@ public class AuthService {
         }
     }
 
-    private AuthResponse toAuthResponse(User user) {
-        return new AuthResponse(user.getId().toString(), user.getEmail(), user.getFullName(), user.getRole());
-    }
 }

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { MfaChallenge } from '../../../core/models/models';
 
 @Component({
   selector: 'app-login',
@@ -77,7 +78,14 @@ export class LoginComponent {
 
     const { email, password } = this.form.value;
     this.authService.login(email, password).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: (result) => {
+        if ('mfaRequired' in result && (result as MfaChallenge).mfaRequired) {
+          // Navigation to /mfa is handled inside AuthService
+          this.loading = false;
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      },
       error: (err) => {
         this.loading = false;
         this.errorMsg = err.error?.detail ?? 'Invalid email or password';

@@ -6,6 +6,13 @@ export interface User {
   role: string;
   defaultCurrency?: string;
   notificationsEnabled?: boolean;
+  totpEnabled?: boolean;
+}
+
+export interface MfaChallenge {
+  mfaRequired: true;
+  challengeId: string;
+  method: 'TOTP' | 'EMAIL';
 }
 
 export interface UserProfile {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
+import { TwoFactorService, TwoFactorStatus, TotpSetup } from '../../core/services/two-factor.service';
 import { UserProfile } from '../../core/models/models';
 
 const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'JPY'];
@@ -102,13 +103,58 @@ const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'JPY'];
           </div>
         </div>
 
+        <!-- Two-Factor Authentication -->
+        <div class="card">
+          <h2 class="card-title">Two-Factor Authentication</h2>
+          <p class="field-hint" style="margin-bottom:16px">Add an extra layer of security to your account.</p>
+
+          <div *ngIf="mfaError" class="alert alert-error">{{ mfaError }}</div>
+          <div *ngIf="mfaSuccess" class="alert alert-success">{{ mfaSuccess }}</div>
+
+          <!-- TOTP section -->
+          <div class="tfa-row">
+            <div>
+              <label>Authenticator App (TOTP)</label>
+              <p class="field-hint">Google Authenticator, Authy, or any TOTP app.</p>
+            </div>
+            <div class="tfa-actions">
+              <span *ngIf="mfaStatus?.totpEnabled" class="badge badge--success">Enabled</span>
+              <button *ngIf="!mfaStatus?.totpEnabled && !totpSetup" class="btn btn-primary btn-sm" (click)="startTotpSetup()" [disabled]="savingMfa">
+                Set up
+              </button>
+              <button *ngIf="mfaStatus?.totpEnabled" class="btn btn-danger btn-sm" (click)="disableTotp()" [disabled]="savingMfa">
+                Disable
+              </button>
+            </div>
+          </div>
+
+          <!-- TOTP setup flow -->
+          <div *ngIf="totpSetup && !mfaStatus?.totpEnabled" class="totp-setup">
+            <p class="field-hint">Scan this QR code with your authenticator app, or enter the key manually.</p>
+            <img [src]="totpSetup.qrDataUri" alt="TOTP QR code" class="qr-code" />
+            <div class="secret-key">
+              <span class="field-hint">Manual key:</span>
+              <code>{{ totpSetup.secret }}</code>
+            </div>
+            <div class="field-group" style="margin-top:12px">
+              <label>Confirm 6-digit code from app</label>
+              <input type="text" inputmode="numeric" maxlength="6" [(ngModel)]="totpConfirmCode" placeholder="000000" />
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-ghost btn-sm" (click)="totpSetup = null; totpConfirmCode = ''">Cancel</button>
+              <button class="btn btn-primary btn-sm" (click)="confirmTotp()" [disabled]="savingMfa || totpConfirmCode.length !== 6">
+                {{ savingMfa ? 'Enabling…' : 'Enable TOTP' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Account Info (read-only) -->
         <div class="card card--muted">
           <h2 class="card-title">Account</h2>
           <div class="meta-row"><span>Member since</span><span>{{ profile.createdAt | date:'mediumDate' }}</span></div>
           <div class="meta-row"><span>Role</span><span class="badge">User</span></div>
         </div>
-
       </ng-container>
     </div>
   `,
@@ -243,11 +289,66 @@ const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'JPY'];
       font-size: 0.78rem;
       font-weight: 600;
     }
+    .badge--success {
+      background: var(--success-light, #dcfce7);
+      color: var(--success, #16a34a);
+    }
+    .btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      &:hover:not(:disabled) { background: var(--primary-light); }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      &:hover:not(:disabled) { filter: brightness(0.9); }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
+    .tfa-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+    }
+    .tfa-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .totp-setup {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .qr-code {
+      display: block;
+      width: 180px;
+      height: 180px;
+      margin: 12px auto;
+      border-radius: 8px;
+    }
+    .secret-key {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      code {
+        font-size: 0.8rem;
+        background: var(--surface);
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        letter-spacing: 0.05em;
+      }
+    }
   `]
 })
 export class ProfileComponent implements OnInit {
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
+  private twoFactorService = inject(TwoFactorService);
 
   currencies = CURRENCIES;
   profile: UserProfile | null = null;
@@ -269,6 +370,13 @@ export class ProfileComponent implements OnInit {
   prefsSuccess = '';
   prefsError = '';
 
+  mfaStatus: TwoFactorStatus | null = null;
+  totpSetup: TotpSetup | null = null;
+  totpConfirmCode = '';
+  savingMfa = false;
+  mfaSuccess = '';
+  mfaError = '';
+
   get pwValid(): boolean {
     return !!this.pwForm.current && this.pwForm.next.length >= 8 && this.pwForm.next === this.pwForm.confirm;
   }
@@ -282,6 +390,10 @@ export class ProfileComponent implements OnInit {
         this.loading = false;
       },
       error: () => { this.loadError = 'Failed to load profile.'; this.loading = false; }
+    });
+    this.twoFactorService.getStatus().subscribe({
+      next: s => this.mfaStatus = s,
+      error: () => {}
     });
   }
 
@@ -347,6 +459,47 @@ export class ProfileComponent implements OnInit {
         this.prefsError = err?.error?.message ?? 'Failed to save preferences.';
         this.savingPrefs = false;
       }
+    });
+  }
+
+  startTotpSetup(): void {
+    this.mfaError = '';
+    this.savingMfa = true;
+    this.twoFactorService.setupTotp().subscribe({
+      next: s => { this.totpSetup = s; this.savingMfa = false; },
+      error: () => { this.mfaError = 'Failed to start TOTP setup.'; this.savingMfa = false; }
+    });
+  }
+
+  confirmTotp(): void {
+    this.mfaError = '';
+    this.savingMfa = true;
+    this.twoFactorService.confirmTotp(this.totpConfirmCode).subscribe({
+      next: () => {
+        this.mfaSuccess = 'Authenticator app enabled successfully.';
+        this.totpSetup = null;
+        this.totpConfirmCode = '';
+        this.savingMfa = false;
+        if (this.mfaStatus) this.mfaStatus = { totpEnabled: true };
+      },
+      error: err => {
+        this.mfaError = err?.error?.message ?? 'Invalid code. Please try again.';
+        this.savingMfa = false;
+        this.totpConfirmCode = '';
+      }
+    });
+  }
+
+  disableTotp(): void {
+    this.mfaError = '';
+    this.savingMfa = true;
+    this.twoFactorService.disableTotp().subscribe({
+      next: () => {
+        this.mfaSuccess = 'Authenticator app disabled.';
+        this.savingMfa = false;
+        if (this.mfaStatus) this.mfaStatus = { totpEnabled: false };
+      },
+      error: () => { this.mfaError = 'Failed to disable TOTP.'; this.savingMfa = false; }
     });
   }
 }
