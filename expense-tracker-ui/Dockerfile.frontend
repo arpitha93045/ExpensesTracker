@@ -1,9 +1,5 @@
-# Build stage
+# Build stage - v2
 FROM node:20-alpine AS build
-# Accept build args injected by Coolify (ignored but must be declared)
-ARG COOLIFY_FQDN
-ARG SERVICE_FQDN_FRONTEND
-ARG SERVICE_FQDN_BACKEND
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --include=dev
