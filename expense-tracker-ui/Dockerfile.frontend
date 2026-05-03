@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --include=dev
 COPY . .
-RUN ./node_modules/.bin/ng build --configuration production
+RUN node ./node_modules/@angular/cli/bin/ng.js build --configuration production
 
 # Runtime stage: nginx
 FROM nginx:1.27-alpine
