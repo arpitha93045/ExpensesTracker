@@ -53,12 +53,6 @@ export const routes: Routes = [
       import('./features/simulator/simulator.component').then(m => m.SimulatorComponent)
   },
   {
-    path: 'autopsy',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/autopsy/autopsy.component').then(m => m.AutopsyComponent)
-  },
-  {
     path: 'categories',
     canActivate: [authGuard],
     loadComponent: () =>

@@ -38,6 +38,7 @@ public class TaxReportService {
 
     private final TransactionRepository transactionRepository;
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public TaxReportResponse buildReport(UUID userId, int taxYear) {
         LocalDate from = LocalDate.of(taxYear, 1, 1);
         LocalDate to   = LocalDate.of(taxYear, 12, 31);

@@ -167,6 +167,7 @@ public class PdfParserService {
                     continue;
                 }
 
+                String rawDesc = String.join(" ", descLines).trim();
                 String description = buildDescription(descLines);
                 if (!description.isEmpty() && txAmount.compareTo(BigDecimal.ZERO) > 0) {
                     result.add(Transaction.builder()
@@ -176,7 +177,7 @@ public class PdfParserService {
                             .amount(txAmount)
                             .transactionDate(currentDate)
                             .transactionType(type)
-                            .rawText(description)
+                            .rawText(rawDesc)
                             .build());
                 }
 
@@ -197,20 +198,18 @@ public class PdfParserService {
         if (lines.isEmpty()) return "";
         String raw = String.join(" ", lines).trim();
 
-        // UPI format (ICICI / most Indian banks):
-        // UPI/<txn-ref>/<upi-id>/<BANK>/<Merchant Name>/<remarks>
-        // Extract the merchant name (5th segment, index 4), falling back to UPI ID (3rd segment, index 2)
-        java.util.regex.Matcher upiMatcher = Pattern.compile(
-                "(?i)UPI/[^/]*/([^/]+)/[^/]*/([^/]+)").matcher(raw);
-        if (upiMatcher.find()) {
-            String upiId   = upiMatcher.group(1); // e.g. jaya89251-1@oki
-            String name    = upiMatcher.group(2); // e.g. Jaya or merchant name
-            // Prefer the human-readable name if it doesn't look like a UPI ID or txn ref
-            raw = (name != null && !name.isBlank() && !name.contains("@") && !name.matches("[0-9]+"))
-                    ? name : upiId;
-        } else {
-            // Fallback: strip UPI/ prefix and take first meaningful segment
-            raw = raw.replaceAll("(?i)UPI/[^/]*/([^/]+).*", "$1");
+        // UPI format: UPI/<Merchant Name>/<UPI-ID>/<App>/<Bank>/<txn-ref>/...
+        // Segment 1 (index 1) is the merchant/receiver name — always use it first.
+        if (raw.toUpperCase().startsWith("UPI/")) {
+            String[] parts = raw.split("/");
+            String merchant = parts.length > 1 ? parts[1].trim() : "";
+            if (!merchant.isBlank() && !merchant.matches("[0-9]+")) {
+                raw = merchant;
+            } else if (parts.length > 2) {
+                // segment 1 was numeric (rare) — fall back to UPI ID prefix before '@'
+                String upiId = parts[2].trim();
+                raw = upiId.contains("@") ? upiId.split("@")[0].replaceAll("[0-9\\-]+$", "").trim() : upiId;
+            }
         }
 
         raw = raw.replaceAll("(?i)NEFT-[A-Z0-9]+-", "NEFT ");

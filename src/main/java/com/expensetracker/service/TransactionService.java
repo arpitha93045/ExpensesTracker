@@ -40,6 +40,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
 
+    @Transactional(readOnly = true)
     public Page<TransactionResponse> getTransactions(
             UUID userId, LocalDate from, LocalDate to,
             String search, Integer categoryId, TransactionType txType,
@@ -49,6 +50,7 @@ public class TransactionService {
                 .map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public void exportCsv(UUID userId, LocalDate from, LocalDate to,
                           String search, Integer categoryId, TransactionType txType,
                           PrintWriter writer) {
@@ -69,6 +71,7 @@ public class TransactionService {
         writer.flush();
     }
 
+    @Transactional(readOnly = true)
     public void exportExcel(UUID userId, LocalDate from, LocalDate to,
                             String search, Integer categoryId, TransactionType txType,
                             OutputStream out) throws IOException {
@@ -127,6 +130,7 @@ public class TransactionService {
         }
     }
 
+    @Transactional(readOnly = true)
     public void exportPdf(UUID userId, LocalDate from, LocalDate to,
                           String search, Integer categoryId, TransactionType txType,
                           OutputStream out) throws IOException {

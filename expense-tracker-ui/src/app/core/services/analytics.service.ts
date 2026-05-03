@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AnalyticsSummary, BillPredictions, InflationReport,
-  WhatIfResult, CalendarDay, AutopsyReport, Transaction
+  WhatIfResult, CalendarDay, Transaction
 } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
@@ -44,9 +44,5 @@ export class AnalyticsService {
     const params = new HttpParams().set('date', date);
     return this.http.get<Transaction[]>(`${this.API}/calendar/day`, { params, withCredentials: true });
   }
-
-  getAutopsy(yearMonth: string): Observable<AutopsyReport> {
-    const params = new HttpParams().set('yearMonth', yearMonth);
-    return this.http.get<AutopsyReport>(`${this.API}/autopsy`, { params, withCredentials: true });
-  }
 }
+

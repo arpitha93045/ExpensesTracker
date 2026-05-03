@@ -56,69 +56,74 @@ public class CategorizationService {
             .writeTimeout(30, TimeUnit.SECONDS)
             .build();
 
-    // Keyword-based fallback rules (description -> category name)
-    // Covers both Indian and international merchants/apps
-    private static final Map<String, String[]> KEYWORD_RULES = Map.ofEntries(
-            Map.entry("Food & Dining",   new String[]{
-                    "zomato", "swiggy", "dominos", "pizza hut", "mcdonald", "kfc", "subway",
-                    "burger king", "café", "cafe", "restaurant", "dining", "bistro", "dhaba",
-                    "hotel", "canteen", "eatery", "food", "eat", "kitchen", "biryani",
-                    "starbucks", "chaayos", "chai", "bakery", "doordash", "ubereats"}),
-            Map.entry("Groceries",       new String[]{
-                    "bigbasket", "blinkit", "grofers", "zepto", "dunzo", "dmart", "reliance fresh",
-                    "more supermarket", "star bazaar", "nature's basket", "spencer",
-                    "walmart", "kroger", "safeway", "grocery", "supermarket", "kirana",
-                    "vegetables", "fruits", "provisions"}),
-            Map.entry("Transportation",  new String[]{
-                    "uber", "ola", "rapido", "namma yatri", "metro", "bmtc", "best bus",
-                    "irctc", "redbus", "abhibus", "taxi", "auto", "cab", "petrol", "fuel",
-                    "hp petrol", "indian oil", "iocl", "bharat petroleum", "bpcl", "shell",
-                    "parking", "fastag", "toll", "lyft", "transit"}),
-            Map.entry("Travel",          new String[]{
-                    "makemytrip", "goibibo", "cleartrip", "yatra", "easemytrip",
-                    "indigo", "air india", "spicejet", "vistara", "akasa",
-                    "oyo", "treebo", "fabhotels", "airbnb", "booking.com", "expedia",
-                    "airline", "flight", "hotel", "resort", "travel", "holiday"}),
-            Map.entry("Shopping",        new String[]{
-                    "amazon", "flipkart", "myntra", "ajio", "meesho", "nykaa", "tata cliq",
-                    "snapdeal", "shopclues", "reliance digital", "croma", "vijay sales",
-                    "lifestyle", "westside", "pantaloons", "max fashion", "h&m", "zara",
-                    "target", "ebay", "etsy", "store", "shop", "clothing", "apparel"}),
-            Map.entry("Healthcare",      new String[]{
-                    "apollo", "fortis", "manipal", "narayana", "medplus", "netmeds",
-                    "pharmeasy", "1mg", "tata 1mg", "pharmacy", "hospital", "clinic",
-                    "doctor", "medical", "dental", "health", "lab", "diagnostic",
-                    "cvs", "walgreens", "urgent care"}),
-            Map.entry("Utilities",       new String[]{
-                    "bescom", "msedcl", "tata power", "electricity", "water board", "bbmp",
-                    "bwssb", "gas", "piped gas", "indane", "hp gas", "bharatgas",
-                    "airtel", "jio", "vi ", "vodafone", "bsnl", "act fibernet", "hathway",
-                    "internet", "broadband", "postpaid", "prepaid recharge",
-                    "at&t", "verizon", "comcast", "utility", "electric", "cable"}),
-            Map.entry("Subscriptions",   new String[]{
-                    "netflix", "hotstar", "disney+", "amazon prime", "zee5", "sonyliv",
-                    "spotify", "gaana", "wynk", "youtube premium", "apple", "google play",
-                    "microsoft", "adobe", "notion", "github", "subscription", "monthly fee",
-                    "hulu", "annual plan"}),
-            Map.entry("Rent & Housing",  new String[]{
-                    "rent", "lease", "maintenance", "society", "housing", "nobroker",
-                    "magic bricks", "99acres", "mortgage", "landlord", "property", "pg "}),
-            Map.entry("Education",       new String[]{
-                    "byju", "unacademy", "vedantu", "upgrad", "coursera", "udemy",
-                    "tuition", "university", "college", "school", "institute", "coaching",
-                    "exam fee", "textbook", "book", "udemy", "skillshare"}),
-            Map.entry("Entertainment",   new String[]{
-                    "bookmyshow", "paytm insider", "pvr", "inox", "carnival cinemas",
-                    "movie", "cinema", "concert", "event", "ticket", "game", "steam",
-                    "playstation", "xbox", "amc", "sports"}),
-            Map.entry("Insurance",       new String[]{
-                    "lic", "hdfc life", "sbi life", "icici prudential", "bajaj allianz",
-                    "star health", "niva bupa", "care insurance", "policybazaar",
-                    "insurance", "premium", "policy"}),
-            Map.entry("Income",          new String[]{
-                    "salary", "neft", "imps", "credited", "redemption", "dividend",
-                    "interest", "refund", "cashback", "reversal"})
-    );
+    // Keyword rules checked in order — more specific / high-confidence categories first.
+    // Using LinkedHashMap to guarantee iteration order (Map.ofEntries has none).
+    private static final Map<String, String[]> KEYWORD_RULES;
+    static {
+        KEYWORD_RULES = new java.util.LinkedHashMap<>();
+        KEYWORD_RULES.put("Income", new String[]{
+                "salary", "sap labs", "flexben", "credited by", "redemption", "dividend",
+                "refund", "cashback", "reversal", "neft sap", "neft nippon", "neft icici prud",
+                "neft hdfc life", "groww withdraw"});
+        KEYWORD_RULES.put("Food & Dining", new String[]{
+                "zomato", "swiggy", "shake shak", "dominos", "pizza hut", "mcdonald", "kfc", "subway",
+                "burger king", "café", "cafe", "restaurant", "dining", "bistro", "dhaba",
+                "canteen", "eatery", "food", "kitchen", "biryani",
+                "starbucks", "chaayos", "chai", "bakery", "doordash", "ubereats", "tiffin",
+                "sodexo"});
+        KEYWORD_RULES.put("Groceries", new String[]{
+                "bigbasket", "blinkit", "grofers", "zepto", "dunzo", "dmart", "reliance fresh",
+                "more supermarket", "star bazaar", "nature's basket", "spencer",
+                "walmart", "kroger", "safeway", "grocery", "supermarket", "kirana",
+                "vegetables", "fruits", "provisions"});
+        KEYWORD_RULES.put("Transportation", new String[]{
+                "uber", "ola", "rapido", "namma yatri", "metro", "bmtc", "best bus",
+                "irctc", "redbus", "abhibus", "taxi", "cab", "petrol", "fuel",
+                "hp petrol", "indian oil", "iocl", "bharat petroleum", "bpcl", "shell",
+                "parking", "fastag", "toll", "lyft", "transit"});
+        KEYWORD_RULES.put("Travel", new String[]{
+                "makemytrip", "goibibo", "cleartrip", "yatra", "easemytrip",
+                "indigo", "air india", "spicejet", "vistara", "akasa",
+                "oyo", "treebo", "fabhotels", "airbnb", "booking.com", "expedia",
+                "airline", "flight", "resort", "travel", "holiday"});
+        KEYWORD_RULES.put("Shopping", new String[]{
+                "amazon", "flipkart", "myntra", "ajio", "meesho", "nykaa", "tata cliq",
+                "snapdeal", "shopclues", "reliance digital", "croma", "vijay sales",
+                "lifestyle", "westside", "pantaloons", "max fashion", "h&m", "zara",
+                "target", "ebay", "etsy", "clothing", "apparel", "fashion", "jewel",
+                "munchmart", "poly fashi", "razorpay"});
+        KEYWORD_RULES.put("Healthcare", new String[]{
+                "apollo", "fortis", "manipal", "narayana", "medplus", "netmeds",
+                "pharmeasy", "1mg", "tata 1mg", "pharmacy", "hospital", "clinic",
+                "doctor", "medical", "dental", "health", " lab ", "diagnostic",
+                "cvs", "walgreens", "urgent care"});
+        KEYWORD_RULES.put("Utilities", new String[]{
+                "bescom", "msedcl", "tata power", "electricity", "water board", "bbmp",
+                "bwssb", "piped gas", "indane", "hp gas", "bharatgas",
+                "airtel", "jio", "vi ", "vodafone", "bsnl", "act fibernet", "hathway",
+                "internet", "broadband", "postpaid", "prepaid recharge",
+                "at&t", "verizon", "comcast", "utility", "electric", "cable", "gas"});
+        KEYWORD_RULES.put("Subscriptions", new String[]{
+                "netflix", "hotstar", "disney+", "amazon prime", "zee5", "sonyliv",
+                "spotify", "gaana", "wynk", "youtube premium", "apple", "google play",
+                "microsoft", "adobe", "notion", "github", "subscription", "monthly fee",
+                "hulu", "annual plan"});
+        KEYWORD_RULES.put("Rent & Housing", new String[]{
+                "rent", "lease", "maintenance", "society", "housing", "nobroker",
+                "magic bricks", "99acres", "mortgage", "landlord", "property", "pg "});
+        KEYWORD_RULES.put("Education", new String[]{
+                "byju", "unacademy", "vedantu", "upgrad", "coursera", "udemy",
+                "tuition", "university", "college", "school", "institute", "coaching",
+                "exam fee", "textbook", "skillshare"});
+        KEYWORD_RULES.put("Entertainment", new String[]{
+                "bookmyshow", "paytm insider", "pvr", "inox", "carnival cinemas",
+                "movie", "cinema", "concert", "event", "ticket", "game", "steam",
+                "playstation", "xbox", "amc", "sports", "cred"});
+        KEYWORD_RULES.put("Insurance", new String[]{
+                "lic", "hdfc life", "sbi life", "icici prudential", "bajaj allianz",
+                "star health", "niva bupa", "care insurance", "policybazaar",
+                "insurance", "premium", "policy"});
+    }
 
     @Transactional
     public void categorizeTransactions(List<Transaction> transactions, UUID userId) {
@@ -170,8 +175,11 @@ public class CategorizationService {
 
         for (int i = 0; i < batch.size(); i++) {
             Transaction t = batch.get(i);
+            String detail = t.getRawText() != null && !t.getRawText().equals(t.getDescription())
+                    ? t.getDescription() + " [raw: " + t.getRawText() + "]"
+                    : t.getDescription();
             sb.append(String.format("[%d] %s | Amount: %.2f | Type: %s%n",
-                    i, t.getDescription(), t.getAmount(), t.getTransactionType()));
+                    i, detail, t.getAmount(), t.getTransactionType()));
         }
         return sb.toString();
     }
@@ -239,13 +247,16 @@ public class CategorizationService {
 
     private void categorizeBatchWithKeywords(List<Transaction> batch, List<Category> categories) {
         for (Transaction tx : batch) {
+            // Search both description and raw_text so full UPI narration is used even if description was truncated
             String desc = tx.getDescription().toLowerCase();
+            String raw  = tx.getRawText() != null ? tx.getRawText().toLowerCase() : desc;
+            String searchText = (desc + " " + raw).toLowerCase();
             String matchedCategory = null;
 
             outer:
             for (Map.Entry<String, String[]> rule : KEYWORD_RULES.entrySet()) {
                 for (String keyword : rule.getValue()) {
-                    if (desc.contains(keyword)) {
+                    if (searchText.contains(keyword)) {
                         matchedCategory = rule.getKey();
                         break outer;
                     }

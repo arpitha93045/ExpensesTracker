@@ -37,7 +37,7 @@ import { SpinnerComponent } from '../../shared/components/spinner/spinner.compon
           <div class="form-group">
             <label>Calculate based on last</label>
             <div class="period-options">
-              <button *ngFor="let m of [3, 6, 12]" class="period-btn"
+              <button *ngFor="let m of lookbackOptions" class="period-btn"
                       [class.active]="lookbackMonths === m" (click)="lookbackMonths = m">
                 {{ m }} months
               </button>
@@ -101,29 +101,28 @@ export class SimulatorComponent {
   term = '';
   cutPercent = 50;
   lookbackMonths = 6;
+  lookbackOptions = [3, 6, 12];
   result: WhatIfResult | null = null;
   loading = false;
   noData = false;
-
-  get projections() {
-    if (!this.result) return [];
-    return [
-      { label: '1 month',   amount: this.result.savedIn1Month  },
-      { label: '3 months',  amount: this.result.savedIn3Months },
-      { label: '6 months',  amount: this.result.savedIn6Months },
-      { label: '12 months', amount: this.result.savedIn12Months },
-    ];
-  }
+  projections: { label: string; amount: number }[] = [];
 
   calculate(): void {
     if (!this.term.trim()) return;
     this.loading = true;
     this.result = null;
+    this.projections = [];
     this.noData = false;
     this.analyticsService.getWhatIf(this.term.trim(), this.cutPercent, this.lookbackMonths).subscribe({
       next: (r) => {
         this.result = r;
         this.noData = r.currentMonthlyAvg === 0;
+        this.projections = [
+          { label: '1 month',   amount: r.savedIn1Month  },
+          { label: '3 months',  amount: r.savedIn3Months },
+          { label: '6 months',  amount: r.savedIn6Months },
+          { label: '12 months', amount: r.savedIn12Months },
+        ];
         this.loading = false;
       },
       error: () => { this.loading = false; }

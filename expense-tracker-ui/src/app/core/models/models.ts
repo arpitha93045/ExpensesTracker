@@ -182,23 +182,3 @@ export interface CalendarDay {
   netFlow: number;
   transactionCount: number;
 }
-
-// ── Financial Autopsy ────────────────────────────────────────
-export interface AutopsyHighlight {
-  date: string;
-  description: string;
-  amount: number;
-  insight: string;
-}
-
-export interface AutopsyWeeklyBreakdown {
-  week: number;
-  totalSpend: number;
-  topCategory: string;
-}
-
-export interface AutopsyReport {
-  narrative: string;
-  highlights: AutopsyHighlight[];
-  weeklyBreakdown: AutopsyWeeklyBreakdown[];
-}

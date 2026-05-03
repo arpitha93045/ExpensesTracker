@@ -5,7 +5,6 @@ import com.expensetracker.exception.ResourceNotFoundException;
 import com.expensetracker.repository.TransactionRepository;
 import com.expensetracker.repository.UserRepository;
 import com.expensetracker.service.AnalyticsService;
-import com.expensetracker.service.AutopsyService;
 import com.expensetracker.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +25,6 @@ import java.util.UUID;
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
-    private final AutopsyService autopsyService;
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
@@ -89,17 +86,6 @@ public class AnalyticsController {
                 .stream()
                 .map(transactionService::toResponse)
                 .toList();
-    }
-
-    @GetMapping("/autopsy")
-    @Operation(summary = "AI-generated monthly financial narrative")
-    public AutopsyResponse getAutopsy(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam String yearMonth) {
-
-        UUID userId = resolveUserId(userDetails);
-        YearMonth ym = YearMonth.parse(yearMonth);
-        return autopsyService.getAutopsy(userId, ym);
     }
 
     private UUID resolveUserId(UserDetails userDetails) {

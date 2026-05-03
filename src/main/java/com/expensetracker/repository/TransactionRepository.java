@@ -41,11 +41,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
         WHERE t.user_id = :userId
           AND (:from IS NULL OR t.transaction_date >= CAST(:from AS date))
           AND (:to IS NULL OR t.transaction_date <= CAST(:to AS date))
-          AND (:search IS NULL
-               OR LOWER(t.description) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
-               OR (t.merchant IS NOT NULL AND LOWER(t.merchant) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))))
-          AND (:categoryId IS NULL OR c.id = CAST(:categoryId AS integer))
-          AND (:txType IS NULL OR t.transaction_type = CAST(:txType AS text))
+          AND (
+               LOWER(t.description) LIKE LOWER(CONCAT('%', COALESCE(:search, t.description), '%'))
+               OR (t.merchant IS NOT NULL AND LOWER(t.merchant) LIKE LOWER(CONCAT('%', COALESCE(:search, t.merchant), '%'))))
+          AND (:categoryId IS NULL OR c.id = :categoryId)
+          AND (:txType IS NULL OR t.transaction_type = :txType)
         ORDER BY t.transaction_date DESC, t.created_at DESC
         """,
         countQuery = """
@@ -54,11 +54,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
         WHERE t.user_id = :userId
           AND (:from IS NULL OR t.transaction_date >= CAST(:from AS date))
           AND (:to IS NULL OR t.transaction_date <= CAST(:to AS date))
-          AND (:search IS NULL
-               OR LOWER(t.description) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
-               OR (t.merchant IS NOT NULL AND LOWER(t.merchant) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))))
-          AND (:categoryId IS NULL OR c.id = CAST(:categoryId AS integer))
-          AND (:txType IS NULL OR t.transaction_type = CAST(:txType AS text))
+          AND (
+               LOWER(t.description) LIKE LOWER(CONCAT('%', COALESCE(:search, t.description), '%'))
+               OR (t.merchant IS NOT NULL AND LOWER(t.merchant) LIKE LOWER(CONCAT('%', COALESCE(:search, t.merchant), '%'))))
+          AND (:categoryId IS NULL OR c.id = :categoryId)
+          AND (:txType IS NULL OR t.transaction_type = :txType)
         """,
         nativeQuery = true)
     Page<Transaction> search(
@@ -77,11 +77,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
         WHERE t.user_id = :userId
           AND (:from IS NULL OR t.transaction_date >= CAST(:from AS date))
           AND (:to IS NULL OR t.transaction_date <= CAST(:to AS date))
-          AND (:search IS NULL
-               OR LOWER(t.description) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))
-               OR (t.merchant IS NOT NULL AND LOWER(t.merchant) LIKE LOWER(CONCAT('%', CAST(:search AS text), '%'))))
-          AND (:categoryId IS NULL OR c.id = CAST(:categoryId AS integer))
-          AND (:txType IS NULL OR t.transaction_type = CAST(:txType AS text))
+          AND (
+               LOWER(t.description) LIKE LOWER(CONCAT('%', COALESCE(:search, t.description), '%'))
+               OR (t.merchant IS NOT NULL AND LOWER(t.merchant) LIKE LOWER(CONCAT('%', COALESCE(:search, t.merchant), '%'))))
+          AND (:categoryId IS NULL OR c.id = :categoryId)
+          AND (:txType IS NULL OR t.transaction_type = :txType)
         ORDER BY t.transaction_date DESC, t.created_at DESC
         """,
         nativeQuery = true)

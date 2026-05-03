@@ -19,7 +19,6 @@ import { AsyncPipe, NgIf } from '@angular/common';
         <li><a routerLink="/transactions" routerLinkActive="active">Transactions</a></li>
         <li><a routerLink="/calendar" routerLinkActive="active">Calendar</a></li>
         <li><a routerLink="/simulator" routerLinkActive="active">Simulator</a></li>
-        <li><a routerLink="/autopsy" routerLinkActive="active">Autopsy</a></li>
         <li><a routerLink="/categories" routerLinkActive="active">Categories</a></li>
         <li><a routerLink="/tax-report" routerLinkActive="active">Tax Report</a></li>
         <li><a routerLink="/upload" routerLinkActive="active">Upload</a></li>
