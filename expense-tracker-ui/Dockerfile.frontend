@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --include=dev
 COPY . .
-RUN bash -c 'node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng.js build --configuration production 2>&1; echo "EXIT:$?"' | tee /tmp/build.log | tail -50 && grep -q "EXIT:0" /tmp/build.log
+RUN bash -c 'node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng.js build --configuration production 2>&1; echo "EXIT:$?"' | tee /tmp/build.log && grep -q "EXIT:0" /tmp/build.log || (cat /tmp/build.log && exit 1)
 
 # Runtime stage: nginx
 FROM nginx:1.27-alpine
