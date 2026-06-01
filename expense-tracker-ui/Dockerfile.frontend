@@ -1,11 +1,11 @@
-# Build stage - v4
+# Build stage - v5
 FROM node:20-alpine AS build
 RUN apk add --no-cache bash
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --include=dev
 COPY . .
-RUN node --max-old-space-size=2048 ./node_modules/@angular/cli/bin/ng.js build --configuration production
+RUN node --max-old-space-size=4096 ./node_modules/@angular/cli/bin/ng.js build --configuration production --no-progress 2>&1
 
 # Runtime stage: nginx
 FROM nginx:1.27-alpine
