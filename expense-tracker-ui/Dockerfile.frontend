@@ -1,14 +1,11 @@
 # syntax=docker/dockerfile:1
-# Build stage - v8
+# Build stage - v9
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --include=dev
+RUN npm install --no-audit --no-fund --prefer-offline
 COPY . .
-RUN node --max-old-space-size=4096 /app/node_modules/.bin/ng build --configuration production > /tmp/ng-build.log 2>&1; \
-    EXIT_CODE=$?; \
-    cat /tmp/ng-build.log; \
-    exit $EXIT_CODE
+RUN node --max-old-space-size=4096 ./node_modules/@angular/cli/bin/ng.js build --configuration production
 
 # Runtime stage: nginx
 FROM nginx:1.27-alpine
