@@ -1,19 +1,9 @@
 # syntax=docker/dockerfile:1
-# Build stage - v10
+# Build stage - v11
 FROM node:20-alpine AS build
 WORKDIR /app
-
-# Install Angular CLI globally (avoids depending on local devDep install)
-RUN npm install -g @angular/cli@18 --no-audit --no-fund
-
-COPY package*.json ./
-# Install only production deps first (lighter), then add build-required devDeps
-RUN npm install --omit=dev --no-audit --no-fund && \
-    npm install --no-save --no-audit --no-fund \
-      @angular/compiler-cli@18 \
-      @angular-devkit/build-angular@18 \
-      typescript@5.5
-
+COPY package*.json .npmrc ./
+RUN npm install --no-audit --no-fund
 COPY . .
 RUN node --max-old-space-size=4096 ./node_modules/@angular/cli/bin/ng.js build --configuration production
 
