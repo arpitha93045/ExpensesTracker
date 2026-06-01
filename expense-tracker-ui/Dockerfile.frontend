@@ -1,11 +1,14 @@
 # syntax=docker/dockerfile:1
-# Build stage - v7
+# Build stage - v8
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --include=dev
 COPY . .
-RUN node --max-old-space-size=4096 /app/node_modules/.bin/ng build --configuration production
+RUN node --max-old-space-size=4096 /app/node_modules/.bin/ng build --configuration production > /tmp/ng-build.log 2>&1; \
+    EXIT_CODE=$?; \
+    cat /tmp/ng-build.log; \
+    exit $EXIT_CODE
 
 # Runtime stage: nginx
 FROM nginx:1.27-alpine
