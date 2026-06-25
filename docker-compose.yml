@@ -32,14 +32,14 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-this-to-a-very-long-secret-at-least-256-bits-long}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       STORAGE_PATH: /var/app/uploads
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://dmvxbnlbmo52vqa7zbi0q2sz.orc3.varundeva.com}
+      CORS_ORIGINS: ${CORS_ORIGINS:-${SERVICE_FQDN_FRONTEND_80}}
       MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-noreply@expensetracker.com}
       NOTIFICATIONS_ENABLED: ${NOTIFICATIONS_ENABLED:-false}
-      APP_BASE_URL: ${APP_BASE_URL:-https://dmvxbnlbmo52vqa7zbi0q2sz.orc3.varundeva.com}
+      APP_BASE_URL: ${APP_BASE_URL:-${SERVICE_FQDN_FRONTEND_80}}
     volumes:
       - uploads_data:/var/app/uploads
     expose:
@@ -58,6 +58,8 @@ services:
       context: ./expense-tracker-ui
       dockerfile: Dockerfile.frontend
     container_name: expense-tracker-ui
+    environment:
+      SERVICE_FQDN_FRONTEND_80: ${SERVICE_FQDN_FRONTEND_80}
     expose:
       - "80"
     depends_on:
